@@ -1,32 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Runner Game</title>
+  <title>Game dengan Sound</title>
 
   <style>
     body {
       margin: 0;
-      overflow: hidden;
-      background: skyblue;
       font-family: Arial;
+      background: skyblue;
+      text-align: center;
     }
 
-    /* BACKGROUND TEXT (nama bergerak) */
-    .bg-text {
-      position: absolute;
-      white-space: nowrap;
-      font-size: 60px;
-      color: rgba(255,255,255,0.3);
-      top: 40%;
-      animation: moveText 8s linear infinite;
-    }
-
-    @keyframes moveText {
-      from { left: 100%; }
-      to { left: -100%; }
-    }
-
-    /* PLAYER */
     #player {
       width: 50px;
       height: 50px;
@@ -36,16 +20,6 @@
       left: 50px;
     }
 
-    /* GROUND */
-    #ground {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 50px;
-      background: green;
-    }
-
-    /* OBSTACLE */
     #obstacle {
       width: 40px;
       height: 60px;
@@ -55,41 +29,70 @@
       right: -60px;
     }
 
-    /* SCORE */
     #score {
       position: absolute;
       top: 20px;
       left: 20px;
       font-size: 20px;
     }
+
+    #startBtn {
+      margin-top: 200px;
+      padding: 15px 25px;
+      font-size: 18px;
+    }
   </style>
 </head>
 
 <body>
 
-<!-- BACKGROUND NAME -->
-<div class="bg-text">🔥 GAME BY RAFIQ 🔥</div>
+<h1>🎮 Game Sound Edition</h1>
+<button id="startBtn" onclick="startGame()">START GAME</button>
 
 <div id="player"></div>
-<div id="ground"></div>
 <div id="obstacle"></div>
 <div id="score">Score: 0</div>
+
+<!-- 🔊 SOUND -->
+<audio id="bgm" loop>
+  <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mp3">
+</audio>
+
+<audio id="jumpSound">
+  <source src="https://www.soundjay.com/button/sounds/button-16.mp3" type="audio/mp3">
+</audio>
+
+<audio id="gameOverSound">
+  <source src="https://www.soundjay.com/button/sounds/button-10.mp3" type="audio/mp3">
+</audio>
 
 <script>
 let player = document.getElementById("player");
 let obstacle = document.getElementById("obstacle");
 let scoreText = document.getElementById("score");
 
+let bgm = document.getElementById("bgm");
+let jumpSound = document.getElementById("jumpSound");
+let gameOverSound = document.getElementById("gameOverSound");
+
 let jumping = false;
 let position = 50;
 let obstacleX = window.innerWidth;
 let score = 0;
-let speed = 8;
+let gameRunning = false;
+
+function startGame() {
+  document.getElementById("startBtn").style.display = "none";
+  bgm.play(); // 🎶 start music
+  gameRunning = true;
+  gameLoop();
+}
 
 // JUMP
 document.addEventListener("keydown", function(e) {
-  if (e.code === "Space" && !jumping) {
+  if (e.code === "Space" && !jumping && gameRunning) {
     jumping = true;
+    jumpSound.play(); // 💥 sound lompat
     jump();
   }
 });
@@ -120,32 +123,30 @@ function fall() {
   }, 20);
 }
 
-// OBSTACLE LOOP (PENTING FIX)
+// GAME LOOP
 function gameLoop() {
-  obstacleX -= speed;
+  if (!gameRunning) return;
+
+  obstacleX -= 8;
   obstacle.style.left = obstacleX + "px";
 
-  // reset obstacle
   if (obstacleX < -60) {
-    obstacleX = window.innerWidth + 100;
+    obstacleX = window.innerWidth;
     score++;
     scoreText.innerHTML = "Score: " + score;
   }
 
   // collision
-  if (
-    obstacleX < 100 &&
-    obstacleX > 40 &&
-    position < 110
-  ) {
+  if (obstacleX < 100 && obstacleX > 40 && position < 110) {
+    gameRunning = false;
+    bgm.pause();
+    gameOverSound.play();
     alert("💀 Game Over! Score: " + score);
     location.reload();
   }
 
   requestAnimationFrame(gameLoop);
 }
-
-gameLoop();
 </script>
 
 </body>
