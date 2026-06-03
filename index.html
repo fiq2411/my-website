@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Game Lompat</title>
+  <title>Game Lompat Halangan</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      background: #87CEEB;
+      background: skyblue;
     }
 
     #player {
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       background: red;
       position: absolute;
       bottom: 50px;
@@ -25,6 +25,23 @@
       height: 50px;
       background: green;
     }
+
+    #obstacle {
+      width: 40px;
+      height: 60px;
+      background: black;
+      position: absolute;
+      bottom: 50px;
+      right: -50px;
+    }
+
+    #score {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 20px;
+      font-family: Arial;
+    }
   </style>
 </head>
 
@@ -32,45 +49,84 @@
 
 <div id="player"></div>
 <div id="ground"></div>
+<div id="obstacle"></div>
+<div id="score">Score: 0</div>
 
 <script>
 let player = document.getElementById("player");
-let isJumping = false;
-let gravity = 0;
+let obstacle = document.getElementById("obstacle");
+let scoreText = document.getElementById("score");
 
+let jumping = false;
+let position = 50;
+let obstacleX = window.innerWidth;
+let score = 0;
+let gameOver = false;
+
+// LOMPAT
 document.addEventListener("keydown", function(e) {
-  if (e.code === "Space" && !isJumping) {
+  if (e.code === "Space" && !jumping && !gameOver) {
+    jumping = true;
     jump();
   }
 });
 
 function jump() {
-  isJumping = true;
-  gravity = 15;
-
   let up = setInterval(() => {
-    gravity -= 1;
-    player.style.bottom = (parseInt(player.style.bottom || 50) + gravity) + "px";
-
-    if (gravity <= 0) {
+    if (position >= 200) {
       clearInterval(up);
       fall();
+    } else {
+      position += 10;
+      player.style.bottom = position + "px";
     }
   }, 20);
 }
 
 function fall() {
   let down = setInterval(() => {
-    let pos = parseInt(player.style.bottom || 50);
-    if (pos > 50) {
-      player.style.bottom = (pos - 5) + "px";
-    } else {
-      player.style.bottom = "50px";
-      isJumping = false;
+    if (position <= 50) {
+      position = 50;
+      player.style.bottom = position + "px";
+      jumping = false;
       clearInterval(down);
+    } else {
+      position -= 10;
+      player.style.bottom = position + "px";
     }
   }, 20);
 }
+
+// HALANGAN GERAK
+function moveObstacle() {
+  let move = setInterval(() => {
+    if (gameOver) return clearInterval(move);
+
+    obstacleX -= 8;
+    obstacle.style.left = obstacleX + "px";
+
+    // reset obstacle bila lepas kiri
+    if (obstacleX < -50) {
+      obstacleX = window.innerWidth;
+      score++;
+      scoreText.innerHTML = "Score: " + score;
+    }
+
+    // COLLISION
+    if (
+      obstacleX < 100 &&
+      obstacleX > 30 &&
+      position < 110
+    ) {
+      gameOver = true;
+      alert("💀 Game Over! Score: " + score);
+      location.reload();
+    }
+
+  }, 20);
+}
+
+moveObstacle();
 </script>
 
 </body>
