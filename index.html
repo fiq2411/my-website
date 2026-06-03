@@ -1,14 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Game Lompat Halangan</title>
+  <title>Runner Game</title>
+
   <style>
     body {
       margin: 0;
       overflow: hidden;
       background: skyblue;
+      font-family: Arial;
     }
 
+    /* BACKGROUND TEXT (nama bergerak) */
+    .bg-text {
+      position: absolute;
+      white-space: nowrap;
+      font-size: 60px;
+      color: rgba(255,255,255,0.3);
+      top: 40%;
+      animation: moveText 8s linear infinite;
+    }
+
+    @keyframes moveText {
+      from { left: 100%; }
+      to { left: -100%; }
+    }
+
+    /* PLAYER */
     #player {
       width: 50px;
       height: 50px;
@@ -18,6 +36,7 @@
       left: 50px;
     }
 
+    /* GROUND */
     #ground {
       position: absolute;
       bottom: 0;
@@ -26,26 +45,30 @@
       background: green;
     }
 
+    /* OBSTACLE */
     #obstacle {
       width: 40px;
       height: 60px;
       background: black;
       position: absolute;
       bottom: 50px;
-      right: -50px;
+      right: -60px;
     }
 
+    /* SCORE */
     #score {
       position: absolute;
       top: 20px;
       left: 20px;
       font-size: 20px;
-      font-family: Arial;
     }
   </style>
 </head>
 
 <body>
+
+<!-- BACKGROUND NAME -->
+<div class="bg-text">🔥 GAME BY AWAK 🔥</div>
 
 <div id="player"></div>
 <div id="ground"></div>
@@ -61,11 +84,11 @@ let jumping = false;
 let position = 50;
 let obstacleX = window.innerWidth;
 let score = 0;
-let gameOver = false;
+let speed = 8;
 
-// LOMPAT
+// JUMP
 document.addEventListener("keydown", function(e) {
-  if (e.code === "Space" && !jumping && !gameOver) {
+  if (e.code === "Space" && !jumping) {
     jumping = true;
     jump();
   }
@@ -97,36 +120,32 @@ function fall() {
   }, 20);
 }
 
-// HALANGAN GERAK
-function moveObstacle() {
-  let move = setInterval(() => {
-    if (gameOver) return clearInterval(move);
+// OBSTACLE LOOP (PENTING FIX)
+function gameLoop() {
+  obstacleX -= speed;
+  obstacle.style.left = obstacleX + "px";
 
-    obstacleX -= 8;
-    obstacle.style.left = obstacleX + "px";
+  // reset obstacle
+  if (obstacleX < -60) {
+    obstacleX = window.innerWidth + 100;
+    score++;
+    scoreText.innerHTML = "Score: " + score;
+  }
 
-    // reset obstacle bila lepas kiri
-    if (obstacleX < -50) {
-      obstacleX = window.innerWidth;
-      score++;
-      scoreText.innerHTML = "Score: " + score;
-    }
+  // collision
+  if (
+    obstacleX < 100 &&
+    obstacleX > 40 &&
+    position < 110
+  ) {
+    alert("💀 Game Over! Score: " + score);
+    location.reload();
+  }
 
-    // COLLISION
-    if (
-      obstacleX < 100 &&
-      obstacleX > 30 &&
-      position < 110
-    ) {
-      gameOver = true;
-      alert("💀 Game Over! Score: " + score);
-      location.reload();
-    }
-
-  }, 20);
+  requestAnimationFrame(gameLoop);
 }
 
-moveObstacle();
+gameLoop();
 </script>
 
 </body>
